@@ -1,0 +1,27 @@
+{
+  "name": "eventhub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EventHub - Events & Ticketing platform (NestJS microservices + Next.js)",
+  "workspaces": [
+    "services/*",
+    "frontend"
+  ],
+  "scripts": {
+    "infra:up": "docker-compose up -d",
+    "infra:down": "docker-compose down",
+    "infra:reset": "docker-compose down -v && docker-compose up -d",
+    "prisma:migrate": "npm --workspace services/event-service run prisma:migrate",
+    "prisma:generate": "npm --workspace services/event-service run prisma:generate",
+    "seed": "npm --workspace services/event-service run seed && npm --workspace services/attendee-service run seed",
+    "dev:event": "npm --workspace services/event-service run start:dev",
+    "dev:attendee": "npm --workspace services/attendee-service run start:dev",
+    "dev:frontend": "npm --workspace frontend run dev",
+    "dev": "concurrently -n event,attendee,web -c blue,green,magenta \"npm:dev:event\" \"npm:dev:attendee\" \"npm:dev:frontend\"",
+    "build": "npm --workspaces run build",
+    "test": "npm --workspaces run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

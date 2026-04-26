@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: eventhub-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: eventhub
+      POSTGRES_PASSWORD: eventhub_dev
+      POSTGRES_DB: eventhub_events
+    ports:
+      - "5440:5432"
+    volumes:
+      - eventhub_pg_data:/var/lib/postgresql/data
+
+  mongodb:
+    image: mongo:7
+    container_name: eventhub-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: eventhub
+      MONGO_INITDB_ROOT_PASSWORD: eventhub_dev
+      MONGO_INITDB_DATABASE: eventhub_attendees
+    ports:
+      - "27018:27017"
+    volumes:
+      - eventhub_mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: eventhub-redis
+    restart: unless-stopped
+    ports:
+      - "6390:6379"
+    volumes:
+      - eventhub_redis_data:/data
+
+volumes:
+  eventhub_pg_data:
+  eventhub_mongo_data:
+  eventhub_redis_data:

@@ -1,0 +1,54 @@
+// EventHub - event-service Prisma schema
+// Owns Events and Tickets in Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+enum TicketStatus {
+  RESERVED
+  CONFIRMED
+  CANCELLED
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  venue       String
+  startsAt    DateTime
+  capacity    Int
+  status      EventStatus @default(PUBLISHED)
+  createdBy   String      // attendee id from attendee-service
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  tickets     Ticket[]
+
+  @@index([status, startsAt])
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  eventId     String
+  attendeeId  String       // owned by attendee-service
+  seatLabel   String
+  status      TicketStatus @default(RESERVED)
+  createdAt   DateTime     @default(now())
+
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, seatLabel])
+  @@index([attendeeId])
+}
