@@ -1,0 +1,30 @@
+# A release tag (vX.Y.Z) deploys to production after the tests pass. The deploy step only prints: nothing is really
+# deployed. It names the GitHub environment, so GitHub records the deployment the way a real deploy would.
+name: Deploy to production
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm --workspace services/event-service run prisma:generate
+      - run: npm --workspace services/event-service test
+
+  deploy-production:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://eventhub.example.com
+    steps:
+      - run: echo "Deploying ${GITHUB_REF_NAME} to production"
+      - run: echo "Health check passed"
