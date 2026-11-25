@@ -1,0 +1,29 @@
+# Every push to main deploys to staging after the tests pass. The deploy step only prints: nothing is really
+# deployed. It names the GitHub environment, so GitHub records the deployment the way a real deploy would.
+name: Deploy to staging
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm --workspace services/event-service run prisma:generate
+      - run: npm --workspace services/event-service test
+
+  deploy-staging:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.eventhub.example.com
+    steps:
+      - run: echo "Deploying ${GITHUB_SHA::8} to staging"
